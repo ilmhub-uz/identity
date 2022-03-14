@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authentication;
 
 namespace identity.ViewModels;
 
@@ -14,4 +15,5 @@ public class LoginViewModel
     public string ConfirmPassword { get; set; }
 
     public string ReturnUrl { get; set; }
+    public IEnumerable<AuthenticationScheme> ExternalProviders { get; internal set; }
 }

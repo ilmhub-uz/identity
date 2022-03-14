@@ -1,5 +1,9 @@
+using System.Security.Claims;
 using identity.Entity;
 using identity.ViewModels;
+using IdentityModel;
+using IdentityServer4;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,8 +23,15 @@ public class AccountController : Controller
         _userManager = userManager;
     }
 
-    public IActionResult Login(string returnUrl)
-        => View(new LoginViewModel() { ReturnUrl = returnUrl });
+    public async Task<IActionResult> Login(string returnUrl)
+    {
+        var model = new LoginViewModel()
+        {
+            ReturnUrl = returnUrl,
+            ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync()
+        };
+        return View(model);
+    }
     
     [HttpPost]
     public async Task<IActionResult> Login(LoginViewModel model)
@@ -67,5 +78,73 @@ public class AccountController : Controller
         }
 
         return View(model);
+    }
+
+    public IActionResult ExternalLogin(string provider, string returnUrl)
+    {
+        var callbackUrl = Url.Action("ExternalLoginCallback");
+
+        var props = new AuthenticationProperties
+        {
+            RedirectUri = callbackUrl,
+            Items =
+            {
+                { "scheme", provider },
+                { "returnUrl", returnUrl }
+            }
+        };
+
+        return Challenge(props, provider);
+    }
+
+    public async Task<IActionResult> ExternalLoginCallback(string returnUrl)
+    {
+        var result = await HttpContext.AuthenticateAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+        if (result?.Succeeded != true)
+        {
+            throw new Exception("External authentication error");
+        }
+
+        // retrieve claims of the external user
+        var externalUser = result.Principal;
+        if (externalUser == null)
+        {
+            throw new Exception("External authentication error");
+        }
+
+        var claims = externalUser.Claims.ToList();
+
+        var userIdClaim = claims.Find(x => x.Type == JwtClaimTypes.Subject) ?? claims.Find(x => x.Type == ClaimTypes.NameIdentifier);
+        var nameClaim = claims.Find(x => x.Type == JwtClaimTypes.Name) ?? claims.Find(x => x.Type == ClaimTypes.Name);
+        var emailClaim = claims.Find(x => x.Type == JwtClaimTypes.Email) ?? claims.Find(x => x.Type == ClaimTypes.Email);
+
+        if(emailClaim == null || userIdClaim == null)
+        {
+            return Redirect("Login");
+        }
+
+        var user = await _userManager.FindByEmailAsync(emailClaim.Value);
+        if(user == null)
+        {
+            user = new User()
+            {
+                Fullname = nameClaim.Value,
+                Email = emailClaim.Value,
+                UserName = emailClaim.Value[..emailClaim.Value.IndexOf('@')],
+                IsExternal = true,
+                ExternalProvider = emailClaim.Issuer
+            };
+
+            var createResult = await _userManager.CreateAsync(user);
+            if(!createResult.Succeeded)
+            {
+                return Redirect("Login");
+            }
+        }
+
+        await _signInManager.SignInAsync(user, false);
+        await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+
+        return Redirect(returnUrl ?? "/");
     }
 }
