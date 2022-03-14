@@ -1,6 +1,9 @@
+using System.Net;
 using System.Reflection;
 using identity.Data;
 using identity.Entity;
+using IdentityServer4;
+using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,9 +40,35 @@ builder.Services.AddIdentityServer()
 })
 .AddDeveloperSigningCredential();
 
+builder.Services.AddCors(options => options.AddDefaultPolicy(builder => builder.AllowAnyOrigin()));
+builder.Services.AddAuthentication()
+    .AddGoogle("Google", options =>
+    {
+        options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+        options.ForwardSignOut = IdentityServerConstants.DefaultCookieAuthenticationScheme;
+
+        options.ClientId = "857415523293-gg6iia7hqlosotcf86ipcat8aco9sv01.apps.googleusercontent.com";
+        options.ClientSecret = "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";
+    });
+    // .AddOpenIdConnect("Github", "GitHub", options =>
+    // {
+    //     options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+    //     options.ForwardSignOut = IdentityServerConstants.DefaultCookieAuthenticationScheme;
+
+    //     options.Authority = "https://accounts.google.com/";
+    //     options.ClientId = "708996912208-9m4dkjb5hscn7cjrn5u0r4tbgkbj1fko.apps.googleusercontent.com";
+
+    //     // options.CallbackPath = "/signin-google";
+    //     options.Scope.Add("email");
+    // });
+
 builder.Services.AddControllersWithViews();
 
+
 var app = builder.Build();
+
+app.UseStaticFiles();
+app.UseCors();
 
 app.UseIdentityServer();
 

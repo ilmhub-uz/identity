@@ -8,4 +8,6 @@ public class User : IdentityUser
     public string Bio { get; set; }
     public DateTimeOffset Birthdate { get; set; }
     public virtual ICollection<IdentityRole> Roles { get; set; }
+    public bool IsExternal { get; set; }
+    public string ExternalProvider { get; set; }
 }
