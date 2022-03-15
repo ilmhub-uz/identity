@@ -40,7 +40,14 @@ builder.Services.AddIdentityServer()
 })
 .AddDeveloperSigningCredential();
 
-builder.Services.AddCors(options => options.AddDefaultPolicy(builder => builder.AllowAnyOrigin()));
+builder.Services.AddCors(options 
+    => options.AddDefaultPolicy(builder => 
+    {
+        // TODO: (WA) - Allow only pre-defined origins and headers
+        // TODO: probably load allowed origins/headers from config file
+        builder.AllowAnyOrigin();
+        builder.AllowAnyHeader();
+    }));
 builder.Services.AddAuthentication()
     .AddGoogle("Google", options =>
     {

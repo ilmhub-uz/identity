@@ -80,17 +80,22 @@ public class AccountController : Controller
         return View(model);
     }
 
+    // public async Task<IActionResult> Logout(string logoutId)
+    // {
+    //     return await HttpContext.SignOutAsync(logoutId);
+    // }
+    
+
     public IActionResult ExternalLogin(string provider, string returnUrl)
     {
-        var callbackUrl = Url.Action("ExternalLoginCallback");
+        var callbackUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl = returnUrl ?? string.Empty });
 
         var props = new AuthenticationProperties
         {
             RedirectUri = callbackUrl,
             Items =
             {
-                { "scheme", provider },
-                { "returnUrl", returnUrl }
+                { "scheme", provider }
             }
         };
 
