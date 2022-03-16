@@ -40,30 +40,35 @@ builder.Services.AddIdentityServer()
 })
 .AddDeveloperSigningCredential();
 
-builder.Services.AddCors(options => options.AddDefaultPolicy(builder => builder.AllowAnyOrigin()));
+builder.Services.AddCors(options 
+    => options.AddDefaultPolicy(builder => 
+    {
+        // TODO: (WA) - Allow only pre-defined origins and headers
+        // TODO: probably load allowed origins/headers from config file
+        builder.AllowAnyOrigin();
+        builder.AllowAnyHeader();
+    }));
 builder.Services.AddAuthentication()
     .AddGoogle("Google", options =>
     {
         options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
         options.ForwardSignOut = IdentityServerConstants.DefaultCookieAuthenticationScheme;
 
-        options.ClientId = "857415523293-gg6iia7hqlosotcf86ipcat8aco9sv01.apps.googleusercontent.com";
-        options.ClientSecret = "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";
+        options.ClientId = builder.Configuration["ExternalProviders:Google:ClientId"];
+        options.ClientSecret = builder.Configuration["ExternalProviders:Google:ClientSecret"];
+    })
+    .AddGitHub("Github", options =>
+    {
+        options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+        options.ForwardSignOut = IdentityServerConstants.DefaultCookieAuthenticationScheme;
+
+        options.ClientId = builder.Configuration["ExternalProviders:Github:ClientId"];
+        options.ClientSecret = builder.Configuration["ExternalProviders:Github:ClientSecret"];
+
+        options.Scope.Add("user:email");
     });
-    // .AddOpenIdConnect("Github", "GitHub", options =>
-    // {
-    //     options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-    //     options.ForwardSignOut = IdentityServerConstants.DefaultCookieAuthenticationScheme;
-
-    //     options.Authority = "https://accounts.google.com/";
-    //     options.ClientId = "708996912208-9m4dkjb5hscn7cjrn5u0r4tbgkbj1fko.apps.googleusercontent.com";
-
-    //     // options.CallbackPath = "/signin-google";
-    //     options.Scope.Add("email");
-    // });
 
 builder.Services.AddControllersWithViews();
-
 
 var app = builder.Build();
 

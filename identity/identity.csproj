@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="aspnet.security.oauth.github" Version="6.0.4" />
     <PackageReference Include="identityserver4" Version="4.1.2" />
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
     <PackageReference Include="IdentityServer4.aspnetidentity" Version="4.1.2" />
