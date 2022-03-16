@@ -56,18 +56,17 @@ builder.Services.AddAuthentication()
 
         options.ClientId = "857415523293-gg6iia7hqlosotcf86ipcat8aco9sv01.apps.googleusercontent.com";
         options.ClientSecret = "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";
+    })
+    .AddGitHub("Github", options =>
+    {
+        options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+        options.ForwardSignOut = IdentityServerConstants.DefaultCookieAuthenticationScheme;
+
+        options.ClientId = "0754ff2481862bcb62c1";
+        options.ClientSecret = "28ae8dee4563f4341059e9c5c293f1aad535712e";
+
+        options.Scope.Add("user:email");
     });
-    // .AddOpenIdConnect("Github", "GitHub", options =>
-    // {
-    //     options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-    //     options.ForwardSignOut = IdentityServerConstants.DefaultCookieAuthenticationScheme;
-
-    //     options.Authority = "https://accounts.google.com/";
-    //     options.ClientId = "708996912208-9m4dkjb5hscn7cjrn5u0r4tbgkbj1fko.apps.googleusercontent.com";
-
-    //     // options.CallbackPath = "/signin-google";
-    //     options.Scope.Add("email");
-    // });
 
 builder.Services.AddControllersWithViews();
 

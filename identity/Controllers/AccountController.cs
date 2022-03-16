@@ -3,6 +3,7 @@ using identity.Entity;
 using identity.ViewModels;
 using IdentityModel;
 using IdentityServer4;
+using IdentityServer4.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,13 +15,16 @@ public class AccountController : Controller
 {
     private readonly SignInManager<User> _signInManager;
     private readonly UserManager<User> _userManager;
+    private readonly IIdentityServerInteractionService _interactionService;
 
     public AccountController(
         SignInManager<User> signInManager,
-        UserManager<User> userManager)
+        UserManager<User> userManager,
+        IIdentityServerInteractionService interactionService)
     {
         _signInManager = signInManager;
         _userManager = userManager;
+        _interactionService = interactionService;
     }
 
     public async Task<IActionResult> Login(string returnUrl)
@@ -80,10 +84,18 @@ public class AccountController : Controller
         return View(model);
     }
 
-    // public async Task<IActionResult> Logout(string logoutId)
-    // {
-    //     return await HttpContext.SignOutAsync(logoutId);
-    // }
+    public async Task<IActionResult> Logout(string logoutId)
+    {
+        await _signInManager.SignOutAsync();
+
+        var logoutRequest = await _interactionService.GetLogoutContextAsync(logoutId);
+        if(string.IsNullOrWhiteSpace(logoutRequest?.PostLogoutRedirectUri))
+        {
+            return RedirectToAction("Index", "Home");
+        }
+
+        return Redirect(logoutRequest.PostLogoutRedirectUri);
+    }
     
 
     public IActionResult ExternalLogin(string provider, string returnUrl)
