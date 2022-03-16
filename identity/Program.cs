@@ -54,22 +54,21 @@ builder.Services.AddAuthentication()
         options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
         options.ForwardSignOut = IdentityServerConstants.DefaultCookieAuthenticationScheme;
 
-        options.ClientId = "857415523293-gg6iia7hqlosotcf86ipcat8aco9sv01.apps.googleusercontent.com";
-        options.ClientSecret = "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";
+        options.ClientId = builder.Configuration["Google:ClientId"];
+        options.ClientSecret = builder.Configuration["Google:ClientSecret"];
     })
     .AddGitHub("Github", options =>
     {
         options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
         options.ForwardSignOut = IdentityServerConstants.DefaultCookieAuthenticationScheme;
 
-        options.ClientId = "0754ff2481862bcb62c1";
-        options.ClientSecret = "28ae8dee4563f4341059e9c5c293f1aad535712e";
+        options.ClientId = builder.Configuration["Github:ClientId"];
+        options.ClientSecret = builder.Configuration["Github:ClientSecret"];
 
         options.Scope.Add("user:email");
     });
 
 builder.Services.AddControllersWithViews();
-
 
 var app = builder.Build();
 
