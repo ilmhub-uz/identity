@@ -29,21 +29,7 @@
                 <button class="btn btn-lg btn-primary w-100" type="submit">Sign in</button>
                 <p class="mt-5 mb-3 text-muted">© 2017-2019</p>
             </form>
+            <a asp-action="Register" asp-controller="Account" asp-route-returnUrl="@Model.ReturnUrl">Register</a>
         </div>
     </div>
 </div>
-
-@* <div>
-    <form asp-controller="Account" asp-action="Login" method="post" asp-route-ReturlUrl="@Model.ReturnUrl">
-    <div>
-    <input hidden asp-for="ReturnUrl"/>
-    <input asp-for="Email"/>
-    <input asp-for="Password"/>
-    <button type="submit">Signin</button>
-    </div>
-    </form>
-    or
-    <a asp-action="Register" asp-controller="Account" asp-route-ReturnUrl="@Model.ReturnUrl">
-    Register
-    </a>
-    </div> *@

@@ -51,7 +51,14 @@ public class AccountController : Controller
         return Redirect(model.ReturnUrl ?? "/");
     }
 
-    public IActionResult Register(string returnUrl) => View(new RegisterViewModel() { ReturnUrl = returnUrl });
+    public async Task<IActionResult> Register(string returnUrl)
+    {
+        return View(new RegisterViewModel() 
+        { 
+            ReturnUrl = returnUrl,
+            ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync()
+        });
+    }
 
     [HttpPost]
     public async Task<IActionResult> Register(RegisterViewModel model)
@@ -78,6 +85,12 @@ public class AccountController : Controller
         if(result.Succeeded)
         {
             await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
+            return Redirect(model.ReturnUrl ?? "/");
+        }
+
+        var signinResult = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
+        if(signinResult.Succeeded)
+        {
             return Redirect(model.ReturnUrl ?? "/");
         }
 

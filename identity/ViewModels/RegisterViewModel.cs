@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authentication;
 
 namespace identity.ViewModels;
 
@@ -14,5 +15,11 @@ public class RegisterViewModel
 
     [DataType(DataType.Password)]
     public string Password { get; set; }
+
+    [Compare(nameof(Password))]
+    public string ConfirmPassword { get; set; }
+    
     public string ReturnUrl { get; set; }
+
+    public IEnumerable<AuthenticationScheme> ExternalProviders { get; internal set; }
 }
