@@ -47,7 +47,7 @@ public class AccountController : Controller
         };
         return View(model);
     }
-    
+
     [HttpPost]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
@@ -55,7 +55,8 @@ public class AccountController : Controller
         var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
         if(!result.Succeeded)
         {
-            model.Email = "Error";
+            model.ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync();
+            ModelState.AddModelError("Email", "Email or password is wrong.");
             return View(model);
         }
 
@@ -109,11 +110,14 @@ public class AccountController : Controller
             
             _queue.Queue(KeyValuePair.Create(emailMessage.Id, emailMessage.ToModel()));
 
-            return View("EmailConfirmationSent");
+            return RedirectToAction(nameof(EmailConfirmationSent));
         }
 
         return View(model);
     }
+
+    public IActionResult EmailConfirmationSent() => View();
+    
 
     public async Task<IActionResult> Logout(string logoutId)
     {
@@ -129,8 +133,22 @@ public class AccountController : Controller
     }
     public IActionResult ExternalLogin(string provider, string returnUrl, string method) // method: Login | Register
     {
-        // TODO: should give relavant ExternalCallback Action depending whos calling
-        var callbackUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl = returnUrl ?? string.Empty });
+        if(string.IsNullOrWhiteSpace(method))
+        {
+            return RedirectToAction(nameof(Login));
+        }
+
+        var callbackAction = method.ToLowerInvariant() switch
+        {
+            "login" => nameof(ExternalLoginCallback),
+            "register" => nameof(ExternalRegisterCallback),
+            _ => nameof(ExternalLoginCallback)
+        };
+
+        var callbackUrl = Url.Action(
+            action: callbackAction,
+            controller: "Account",
+            values: new { returnUrl = returnUrl ?? string.Empty });
 
         var props = new AuthenticationProperties
         {
@@ -142,6 +160,55 @@ public class AccountController : Controller
         };
 
         return Challenge(props, provider);
+    }
+
+    public async Task<IActionResult> ExternalRegisterCallback(string returnUrl)
+    {
+        var result = await HttpContext.AuthenticateAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+        if (result?.Succeeded != true)
+        {
+            ViewData["ErrorMessage"] = "External login failed";
+            // TODO: log detailed error
+            return Redirect("/error");
+        }
+
+        var externalUser = result.Principal;
+        if (externalUser == null)
+        {
+            ViewData["ErrorMessage"] = "External login failed";
+            // TODO: log detailed error
+            return Redirect("/error");
+        }
+
+        var claims = externalUser.Claims.ToList();
+        var email = claims.Find(x => x.Type == JwtClaimTypes.Email) ?? claims.Find(x => x.Type == ClaimTypes.Email);
+        if (string.IsNullOrWhiteSpace(email?.Value))
+        {
+            ViewData["ErrorMessage"] = "External login failed";
+            // TODO: log detailed error
+            return Redirect("/error");
+        }
+
+        if(await _userManager.Users.AnyAsync(u => u.Email == email.Value))
+        {
+            return View(nameof(Register), new RegisterViewModel()
+            {
+                ErrorMessage = "User with this email already exists.",
+                ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync(),
+                ReturnUrl = returnUrl
+            });
+        }
+
+        var nameClaim = claims.Find(x => x.Type == JwtClaimTypes.Name) ?? claims.Find(x => x.Type == ClaimTypes.Name);
+
+        return View(nameof(Register), new RegisterViewModel()
+        {
+            ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync(),
+            ReturnUrl = returnUrl,
+            Email = email.Value,
+            Fullname = nameClaim.Value,
+            IsExternal = true
+        });
     }
 
     public async Task<IActionResult> ExternalLoginCallback(string returnUrl)

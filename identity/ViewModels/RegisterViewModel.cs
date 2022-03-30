@@ -22,4 +22,8 @@ public class RegisterViewModel
     public string ReturnUrl { get; set; }
 
     public IEnumerable<AuthenticationScheme> ExternalProviders { get; internal set; }
+
+    public string ErrorMessage { get; set; }
+
+    public bool IsExternal { get; set; }
 }

@@ -14,14 +14,20 @@
                     @foreach(var provider in Model.ExternalProviders)
                     {
                         <a  asp-action="ExternalLogin" asp-controller="Account" 
-                            asp-route-returnUrl="@Model.ReturnUrl" asp-route-provider="@provider.Name"
+                            asp-route-returnUrl="@Model.ReturnUrl"
+                            asp-route-provider="@provider.Name"
+                            asp-route-method="register"
                             class="btn btn-danger w-100 mb-1" type="submit">@provider.DisplayName</a>
                     }
                     <p class="col text-muted my-3">OR</p>
                 }
 
-                <input asp-for="Fullname" type="text" id="inputFullname" class="form-control" placeholder="Fullname" required>
-                <input asp-for="Email" type="email" id="inputEmail" class="form-control" placeholder="Email address" required>
+                @{
+                    var isReadonly = Model.IsExternal ? "pointer-events: none" : string.Empty;
+                }
+
+                <input asp-for="Fullname" type="text" id="inputFullname" class='form-control' placeholder="Fullname" required>
+                <input asp-for="Email" type="email" id="inputEmail" class="form-control" placeholder="Email address" required style="@isReadonly;">
                 <input asp-for="Phone" type="tel" id="inputPhone" class="form-control" placeholder="Phone" required>
                 <input asp-for="Password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
                 <input asp-for="ConfirmPassword" type="password" id="inputConfirmPassword" class="form-control" placeholder="Type password again" required>

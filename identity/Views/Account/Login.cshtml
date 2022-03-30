@@ -13,13 +13,16 @@
                     @foreach(var provider in Model.ExternalProviders)
                     {
                         <a  asp-action="ExternalLogin" asp-controller="Account" 
-                            asp-route-returnUrl="@Model.ReturnUrl" asp-route-provider="@provider.Name"
+                            asp-route-returnUrl="@Model.ReturnUrl"
+                            asp-route-provider="@provider.Name"
+                            asp-route-method="login"
                             class="btn btn-danger w-100 mb-1" type="submit">@provider.DisplayName</a>
                     }
                     <p class="col text-muted my-3">OR</p>
                 }
 
                 <input asp-for="Email" type="email" id="inputEmail" class="form-control" placeholder="Email address" required>
+                <span asp-validation-for="Email"></span>
                 <input asp-for="Password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
                 <div class="checkbox mb-3">
                     <label>
