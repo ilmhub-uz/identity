@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "identity", "identity\identi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test-spa", "test-spa\test-spa.csproj", "{36D8AEBD-3FC4-4743-ABD9-C5877BF600CB}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{B1D25086-DCE0-4A66-B560-7C79823CAD1C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ilmhub.model", "shared\ilmhub.model\ilmhub.model.csproj", "{136F4CDE-99CD-449C-BC76-E6E3A1E51750}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +28,12 @@ Global
 		{36D8AEBD-3FC4-4743-ABD9-C5877BF600CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36D8AEBD-3FC4-4743-ABD9-C5877BF600CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36D8AEBD-3FC4-4743-ABD9-C5877BF600CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{136F4CDE-99CD-449C-BC76-E6E3A1E51750}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{136F4CDE-99CD-449C-BC76-E6E3A1E51750}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{136F4CDE-99CD-449C-BC76-E6E3A1E51750}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{136F4CDE-99CD-449C-BC76-E6E3A1E51750}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{136F4CDE-99CD-449C-BC76-E6E3A1E51750} = {B1D25086-DCE0-4A66-B560-7C79823CAD1C}
 	EndGlobalSection
 EndGlobal

@@ -24,6 +24,14 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="microsoft.entityframeworkcore.sqlserver" Version="6.0.2" />
+    <PackageReference Include="sendgrid" Version="9.26.0" />
+    <PackageReference Include="SendGrid.Extensions.DependencyInjection" Version="1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\shared\ilmhub.model\ilmhub.model.csproj" />
+    <ProjectReference Include="..\shared\ilmhub.entity\ilmhub.entity.csproj" />
+    <ProjectReference Include="..\shared\ilmhub.core\ilmhub.core.csproj" />
   </ItemGroup>
 
 </Project>

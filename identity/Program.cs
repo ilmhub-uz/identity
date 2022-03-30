@@ -1,11 +1,11 @@
-using System.Net;
 using System.Reflection;
 using identity.Data;
 using identity.Entity;
+using identity.Services;
 using IdentityServer4;
-using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using SendGrid.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +20,8 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 
     options.User.RequireUniqueEmail = true;
 })
-.AddEntityFrameworkStores<ApplicationDbContext>();
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
 
 var migrationsAssembly = typeof(Program).GetTypeInfo().Assembly.GetName().Name;
 
@@ -67,6 +68,10 @@ builder.Services.AddAuthentication()
 
         options.Scope.Add("user:email");
     });
+
+builder.Services.AddSingleton<MessageQueue<KeyValuePair<Guid, ilmhub.model.Message>>>();
+builder.Services.AddSendGrid(options => options.ApiKey = builder.Configuration["SendGrid:ApiKey"]);
+builder.Services.AddHostedService<MessageQueueService>();
 
 builder.Services.AddControllersWithViews();
 

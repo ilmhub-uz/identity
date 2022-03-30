@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using identity.Entity;
+using identity.Services;
 using identity.ViewModels;
 using IdentityModel;
 using IdentityServer4;
@@ -8,6 +9,10 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ilmhub.core;
+using ilmhub.model;
+using identity.Data;
+using identity.Mappers;
 
 namespace identity.Controllers;
 
@@ -16,15 +21,21 @@ public class AccountController : Controller
     private readonly SignInManager<User> _signInManager;
     private readonly UserManager<User> _userManager;
     private readonly IIdentityServerInteractionService _interactionService;
+    private readonly MessageQueue<KeyValuePair<Guid, Message>> _queue;
+    private readonly ApplicationDbContext _context;
 
     public AccountController(
         SignInManager<User> signInManager,
         UserManager<User> userManager,
-        IIdentityServerInteractionService interactionService)
+        IIdentityServerInteractionService interactionService,
+        MessageQueue<KeyValuePair<Guid, Message>> queue,
+        ApplicationDbContext context)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _interactionService = interactionService;
+        _queue = queue;
+        _context = context;
     }
 
     public async Task<IActionResult> Login(string returnUrl)
@@ -84,14 +95,21 @@ public class AccountController : Controller
         var result = await _userManager.CreateAsync(user, model.Password);
         if(result.Succeeded)
         {
-            await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
-            return Redirect(model.ReturnUrl ?? "/");
-        }
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            // TODO: this URlActoin is wrong.
+            // https:localhost:1223/account/confirmemail?token={}&id={}
+            var confirmUrl = Url.Action("ConfirmEmail", "Account", new { token, user.Id});
 
-        var signinResult = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
-        if(signinResult.Succeeded)
-        {
-            return Redirect(model.ReturnUrl ?? "/");
+            var htmlContent = $"Welcome to Ilmhub, please <a href='{confirmUrl}'>confirm your email</a>";
+
+            var emailMessage = new ilmhub.entity.Message("EmailConfirmation", EMessageType.Email, "no-reply@ilmhub.uz", "Ilmhub", "wakhid2802@gmail.com", user.Fullname, "Confirm your account at Ilmhub", "", htmlContent);
+
+            _context.Messages.Add(emailMessage);
+            await _context.SaveChangesAsync();
+            
+            _queue.Queue(KeyValuePair.Create(emailMessage.Id, emailMessage.ToModel()));
+
+            return View("EmailConfirmationSent");
         }
 
         return View(model);
@@ -109,10 +127,9 @@ public class AccountController : Controller
 
         return Redirect(logoutRequest.PostLogoutRedirectUri);
     }
-    
-
-    public IActionResult ExternalLogin(string provider, string returnUrl)
+    public IActionResult ExternalLogin(string provider, string returnUrl, string method) // method: Login | Register
     {
+        // TODO: should give relavant ExternalCallback Action depending whos calling
         var callbackUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl = returnUrl ?? string.Empty });
 
         var props = new AuthenticationProperties
