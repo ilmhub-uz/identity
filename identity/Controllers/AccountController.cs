@@ -55,6 +55,12 @@ public class AccountController : Controller
         var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
         if(!result.Succeeded)
         {
+            if(result.IsNotAllowed)
+            {
+                ViewData["Email"] = model.Email;
+                return View(nameof(EmailNotConfirmed));
+            }
+
             model.ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync();
             ModelState.AddModelError("Email", "Email or password is wrong.");
             return View(model);
@@ -99,11 +105,11 @@ public class AccountController : Controller
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             // TODO: this URlActoin is wrong.
             // https:localhost:1223/account/confirmemail?token={}&id={}
-            var confirmUrl = Url.Action("ConfirmEmail", "Account", new { token, user.Id});
+            var confirmUrl = Url.Action("ConfirmEmail", "Account", new { token, user.Id}, protocol: "https");
 
             var htmlContent = $"Welcome to Ilmhub, please <a href='{confirmUrl}'>confirm your email</a>";
 
-            var emailMessage = new ilmhub.entity.Message("EmailConfirmation", EMessageType.Email, "no-reply@ilmhub.uz", "Ilmhub", "wakhid2802@gmail.com", user.Fullname, "Confirm your account at Ilmhub", "", htmlContent);
+            var emailMessage = new ilmhub.entity.Message("EmailConfirmation", EMessageType.Email, "no-reply@ilmhub.uz", "Ilmhub", user.Email, user.Fullname, "Confirm your account at Ilmhub", "", htmlContent);
 
             _context.Messages.Add(emailMessage);
             await _context.SaveChangesAsync();
@@ -201,6 +207,8 @@ public class AccountController : Controller
 
         var nameClaim = claims.Find(x => x.Type == JwtClaimTypes.Name) ?? claims.Find(x => x.Type == ClaimTypes.Name);
 
+        await HttpContext.SignOutAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
+
         return View(nameof(Register), new RegisterViewModel()
         {
             ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync(),
@@ -240,20 +248,20 @@ public class AccountController : Controller
         var user = await _userManager.FindByEmailAsync(emailClaim.Value);
         if(user == null)
         {
-            user = new User()
+            return View(nameof(Register), new RegisterViewModel()
             {
-                Fullname = nameClaim.Value,
+                ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync(),
+                ReturnUrl = returnUrl,
                 Email = emailClaim.Value,
-                UserName = emailClaim.Value[..emailClaim.Value.IndexOf('@')],
-                IsExternal = true,
-                ExternalProvider = emailClaim.Issuer
-            };
+                Fullname = nameClaim.Value,
+                IsExternal = true
+            });
+        }
 
-            var createResult = await _userManager.CreateAsync(user);
-            if(!createResult.Succeeded)
-            {
-                return Redirect("Login");
-            }
+        if(!user.EmailConfirmed)
+        {
+            ViewData["Email"] = emailClaim.Value;
+            return View(nameof(EmailNotConfirmed));
         }
 
         await _signInManager.SignInAsync(user, false);
@@ -261,4 +269,122 @@ public class AccountController : Controller
 
         return Redirect(returnUrl ?? "/");
     }
+
+    public IActionResult EmailNotConfirmed() => View();
+
+    public async Task<IActionResult> ConfirmEmail(string id, string token)
+    {
+        if(string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(id))
+        {
+            // TODO: return error message Email Confirmation Link is broken
+            return Redirect("/error?link=broken");
+        }
+
+        var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == id);
+        if(user == null)
+        {
+            // TODO: return error message Email Confirmation Link is broken
+            return Redirect("/error?user=isnull");
+        }
+
+        if(user.EmailConfirmed == true)
+        {
+            // TODO: return error message Email already confirmed, try to <a ...>login</a>.
+            return Redirect("/error?email=alreadyconfirmed");
+        }
+
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+        if(!result.Succeeded)
+        {
+            // TODO: return reason why confirmation failed, probably needs to write custom Confirmation Error
+            return Redirect("/error?confirmation=failed");
+        }
+
+        return RedirectToAction(nameof(EmailConfirmed));
+    }
+
+    public IActionResult EmailConfirmed() => View();
+
+    public IActionResult ForgotPassword() => View(new ForgotPasswordViewModel());
+
+    [HttpPost]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+    {
+        if(string.IsNullOrWhiteSpace(model.Email))
+        {
+            return RedirectToAction(nameof(Login));
+        }
+
+        if(!await _userManager.Users.AnyAsync(u => u.Email == model.Email))
+        {
+            return RedirectToAction(nameof(ResetPasswordSent));
+        }
+        
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        if(user == null)
+        {
+            return RedirectToAction(nameof(ResetPasswordSent));
+        }
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        var confirmUrl = Url.Action("ResetPassword", "Account", new { token, user.Id}, protocol: "https");
+
+        var htmlContent = $"Welcome to Ilmhub, please click <a href='{confirmUrl}'>here</a> to reset your password.";
+
+        var emailMessage = new ilmhub.entity.Message("ResetPassword", EMessageType.Email, "no-reply@ilmhub.uz", "Ilmhub", user.Email, user.Fullname, "Reset Password", "", htmlContent);
+
+        _context.Messages.Add(emailMessage);
+        await _context.SaveChangesAsync();
+        
+        _queue.Queue(KeyValuePair.Create(emailMessage.Id, emailMessage.ToModel()));
+
+        return RedirectToAction(nameof(ResetPasswordSent));
+    }
+
+    public IActionResult ResetPasswordSent() => View();
+    
+    [HttpPost]
+    public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+    {
+        if(!ModelState.IsValid)
+        {
+            return Redirect("/error?model=invalid");
+        }
+
+        var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == model.UserId);
+        if(user == null)
+        {
+            // TODO: return error message Email Confirmation Link is broken
+            // TODO: return error message Email Confirmation Link is broken
+            return Redirect("/error?user=isnull");
+        }
+
+        // TODO: expire token upon successful reset
+        var result = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
+        if(!result.Succeeded)
+        {
+            // TODO: return error message for password reset failed
+            return Redirect("/error?password-reset=failed");
+        }
+
+        return RedirectToAction(nameof(PasswordReset));
+    }
+
+    public IActionResult PasswordReset() => View();
+
+    public IActionResult ResetPassword(string id, string token)
+    {
+        if(string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(id))
+        {
+            // TODO: return error message Email Confirmation Link is broken
+            return Redirect("/error?link=broken");
+        }
+
+        return View(new ResetPasswordViewModel()
+        {
+            UserId = id,
+            Token = token
+        });
+    } 
 }
