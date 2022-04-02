@@ -135,7 +135,8 @@ public class AccountController : Controller
 
     public IActionResult EmailConfirmationSent() => View();
     
-
+    public IActionResult EmailNotConfirmed() => View();
+    
     public async Task<IActionResult> Logout(string logoutId)
     {
         await _signInManager.SignOutAsync();
@@ -280,8 +281,6 @@ public class AccountController : Controller
 
         return Redirect(returnUrl ?? "/");
     }
-
-    public IActionResult EmailNotConfirmed() => View();
 
     public async Task<IActionResult> ConfirmEmail(string id, string token)
     {
