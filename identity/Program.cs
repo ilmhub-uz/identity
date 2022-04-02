@@ -1,4 +1,5 @@
 using System.Reflection;
+using identity.CustomValidators;
 using identity.Data;
 using identity.Entity;
 using identity.Services;
@@ -21,6 +22,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     options.User.RequireUniqueEmail = true;
     options.SignIn.RequireConfirmedEmail = true;
 })
+.AddUserValidator<UserValidatorErrorDescriber>()
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
