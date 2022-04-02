@@ -20,7 +20,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     options.Password.RequiredLength = 6;
 
     options.User.RequireUniqueEmail = true;
-    options.SignIn.RequireConfirmedEmail = true;
+    // options.SignIn.RequireConfirmedEmail = true;
 })
 .AddErrorDescriber<UserValidationErrorDescriber>()
 .AddEntityFrameworkStores<ApplicationDbContext>()
