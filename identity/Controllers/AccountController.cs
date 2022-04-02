@@ -51,6 +51,11 @@ public class AccountController : Controller
     [HttpPost]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
+        if(!ModelState.IsValid)
+        {
+            model.ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync();
+            return View(model);
+        }
         var user = await _userManager.FindByEmailAsync(model.Email);
         if(user == null)
         {
