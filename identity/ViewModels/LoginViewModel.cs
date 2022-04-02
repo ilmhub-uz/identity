@@ -10,7 +10,7 @@ public class LoginViewModel
     public string Email { get; set; }
 
     [DataType(DataType.Password)]
-    [MinLength(6)]
+    [Required]
     public string Password { get; set; }
     
     [Compare(nameof(Password), ErrorMessage = "Confirm password doesnt match.")]
@@ -18,4 +18,7 @@ public class LoginViewModel
 
     public string ReturnUrl { get; set; }
     public IEnumerable<AuthenticationScheme> ExternalProviders { get; internal set; }
+    public IEnumerable<string> ErrorMessages { get; set; }
+    
+    
 }
