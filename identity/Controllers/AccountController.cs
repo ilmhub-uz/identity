@@ -52,6 +52,12 @@ public class AccountController : Controller
     public async Task<IActionResult> Login(LoginViewModel model)
     {
         var user = await _userManager.FindByEmailAsync(model.Email);
+        if(user == null)
+        {
+            ModelState.AddModelError("", "Invalid login attempt.");
+            model.ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync();
+            return View(model);
+        }
         var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
         if(!result.Succeeded)
         {
