@@ -20,10 +20,10 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     options.Password.RequiredLength = 6;
 
     options.User.RequireUniqueEmail = true;
-    // options.SignIn.RequireConfirmedEmail = true;
+    options.SignIn.RequireConfirmedEmail = true;
 })
-.AddUserValidator<UserValidatorErrorDescriber>()
 .AddEntityFrameworkStores<ApplicationDbContext>()
+.AddErrorDescriber<UserValidatorErrorDescriber>()
 .AddDefaultTokenProviders();
 
 var migrationsAssembly = typeof(Program).GetTypeInfo().Assembly.GetName().Name;
@@ -90,7 +90,7 @@ app.UseAuthorization();
 
 app.MapDefaultControllerRoute();
 
-Seed.InitializeConfiguration(app).GetAwaiter().GetResult();
-Seed.InitializeTestUsers(app).GetAwaiter().GetResult();
+// Seed.InitializeConfiguration(app).GetAwaiter().GetResult();
+// Seed.InitializeTestUsers(app).GetAwaiter().GetResult();
 
 app.Run();

@@ -133,6 +133,28 @@ public class AccountController : Controller
         return View(model);
     }
 
+    public IActionResult UserProfile()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> UserProfile(ProfileViewModel model) 
+    {
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        if(user != null)
+        {
+            user.Fullname = model.Fullname;
+            user.PhoneNumber = model.Phone;
+            var updateResult = await _userManager.UpdateAsync(user);
+
+            return View(model);
+        }
+        
+        return View(model);
+    }
+
     public IActionResult EmailConfirmationSent() => View();
     
     public IActionResult EmailNotConfirmed() => View();
