@@ -51,6 +51,10 @@ public class AccountController : Controller
     [HttpPost]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
+        if(!ModelState.IsValid)
+        {
+            return View(model);
+        }
         var user = await _userManager.FindByEmailAsync(model.Email);
         if(user == null)
         {
@@ -123,6 +127,52 @@ public class AccountController : Controller
             _queue.Queue(KeyValuePair.Create(emailMessage.Id, emailMessage.ToModel()));
 
             return RedirectToAction(nameof(EmailConfirmationSent));
+        }
+        else
+        {
+            model.ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync();
+            foreach (var createUserError in result.Errors)
+            {
+                Console.BackgroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine($"{createUserError}");
+                Console.BackgroundColor = ConsoleColor.Black;
+                switch (createUserError.Code)
+                {
+                    case "DuplicateUserName":
+                        ModelState.AddModelError(nameof(model.Email), "Duplicate Username");
+                        break;
+                    case "InvalidUserName":
+                        ModelState.AddModelError(nameof(model.Email), "Invalid Username");
+                        break;
+                    case "RestrictedUsername":
+                        ModelState.AddModelError(nameof(model.Email), "Restricted Username");
+                        break;
+                    case "DuplicateEmail":
+                        ModelState.AddModelError(nameof(model.Email), "This email is already taken");
+                        break;
+                    case "InvalidEmail":
+                        ModelState.AddModelError(nameof(model.Email), "Invalid Email");
+                        break;
+                    case "PasswordTooShort":
+                        ModelState.AddModelError(nameof(model.Password), "Password too short");
+                        break;
+                    case "PasswordRequiresNonAlphanumeric":
+                        ModelState.AddModelError(nameof(model.Password), "Password requires non-alphanumeric characters");
+                        break;
+                    case "PasswordRequiresDigit":
+                        ModelState.AddModelError(nameof(model.Password), "Password requires digit");
+                        break;
+                    case "PasswordRequiresLower":
+                        ModelState.AddModelError(nameof(model.Password), "Password requires lower case characters");
+                        break;
+                    case "PasswordRequiresUpper":
+                        ModelState.AddModelError(nameof(model.Password), "Password requires upper case characters");
+                        break;
+                    default:
+                        ModelState.AddModelError(string.Empty, "Something went wrong");
+                        break;
+                }
+            }
         }
 
         return View(model);

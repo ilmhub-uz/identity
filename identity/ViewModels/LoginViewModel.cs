@@ -5,12 +5,13 @@ namespace identity.ViewModels;
 
 public class LoginViewModel
 {
-    [EmailAddress(ErrorMessage = "Invalid Email Address")]
-    [Required(ErrorMessage = "Email is required")]
+    [Required]
+    [EmailAddress]
     public string Email { get; set; }
 
-    [DataType(DataType.Password)]
     [Required]
+    [MinLength(6)]
+    [DataType(DataType.Password)]
     public string Password { get; set; }
     
     [Compare(nameof(Password), ErrorMessage = "Confirm password doesnt match.")]

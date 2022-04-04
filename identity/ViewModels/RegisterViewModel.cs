@@ -8,6 +8,7 @@ public class RegisterViewModel
     public string Fullname { get; set; }
     
     [EmailAddress]
+    [Required]
     public string Email { get; set; }
 
     [Phone]
