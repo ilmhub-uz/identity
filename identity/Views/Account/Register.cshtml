@@ -26,11 +26,16 @@
                     var isReadonly = Model.IsExternal ? "pointer-events: none" : string.Empty;
                 }
 
-                <input asp-for="Fullname" type="text" id="inputFullname" class='form-control' placeholder="Fullname" required>
-                <input asp-for="Email" type="email" id="inputEmail" class="form-control" placeholder="Email address" required style="@isReadonly;">
-                <input asp-for="Phone" type="tel" id="inputPhone" class="form-control" placeholder="Phone" required>
-                <input asp-for="Password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
-                <input asp-for="ConfirmPassword" type="password" id="inputConfirmPassword" class="form-control" placeholder="Type password again" required>
+                <input asp-for="Fullname" type="text" id="inputFullname" class='form-control' placeholder="Fullname">
+                <span asp-validation-for="Fullname" class="text-danger"></span>
+                <input asp-for="Email" type="email" id="inputEmail" class="form-control" placeholder="Email address" style="@isReadonly;">
+                <span asp-validation-for="Email" class="text-danger"></span>
+                <input asp-for="Phone" type="tel" id="inputPhone" class="form-control" placeholder="Phone">
+                <span asp-validation-for="Phone" class="text-danger"></span>
+                <input asp-for="Password" type="password" id="inputPassword" class="form-control" placeholder="Password">
+                <span asp-validation-for="Password" class="text-danger"></span>
+                <input asp-for="ConfirmPassword" type="password" id="inputConfirmPassword" class="form-control" placeholder="Type password again">
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                 <div class="checkbox mb-3">
                     <label>
                         <input type="checkbox" value="remember-me"> Remember me
