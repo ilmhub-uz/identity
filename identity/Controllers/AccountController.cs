@@ -18,6 +18,7 @@ namespace identity.Controllers;
 
 public class AccountController : Controller
 {
+    private readonly ILogger<AccountController> _logger;
     private readonly SignInManager<User> _signInManager;
     private readonly UserManager<User> _userManager;
     private readonly IIdentityServerInteractionService _interactionService;
@@ -25,12 +26,14 @@ public class AccountController : Controller
     private readonly ApplicationDbContext _context;
 
     public AccountController(
+        ILogger<AccountController> logger,
         SignInManager<User> signInManager,
         UserManager<User> userManager,
         IIdentityServerInteractionService interactionService,
         MessageQueue<KeyValuePair<Guid, Message>> queue,
         ApplicationDbContext context)
     {
+        _logger = logger;
         _signInManager = signInManager;
         _userManager = userManager;
         _interactionService = interactionService;
@@ -254,6 +257,7 @@ public class AccountController : Controller
         {
             ViewData["ErrorMessage"] = "External login failed";
             // TODO: log detailed error
+            _logger.LogError(result.Failure.Message);
             return Redirect("/error");
         }
 
@@ -438,10 +442,11 @@ public class AccountController : Controller
         }
 
         // TODO: expire token upon successful reset
+        // await _userManager.RemoveAuthenticationTokenAsync(user, "", model.Token);
         var result = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
         if(!result.Succeeded)
         {
-            // TODO: return error message for password reset failed
+            _logger.LogError($"Password reset failed {result.Errors}");
             return Redirect("/error?password-reset=failed");
         }
 
