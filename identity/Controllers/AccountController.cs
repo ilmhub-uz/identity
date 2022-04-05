@@ -410,7 +410,7 @@ public class AccountController : Controller
         var confirmUrl = Url.Action("ResetPassword", "Account", new { token, user.Id}, protocol: "https");
         // TODO : Send email with localized reset password link. Now only in English
 
-        var htmlContent = System.IO.File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/emailConfirm.html"));
+        var htmlContent = System.IO.File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/PasswordResetEmail.html"));
         htmlContent = htmlContent.Replace("{confirmUrl}", confirmUrl);
         var emailMessage = new ilmhub.entity.Message("ResetPassword", EMessageType.Email, "no-reply@ilmhub.uz", "Ilmhub", user.Email, user.Fullname, "Reset Password", "", htmlContent);
 
