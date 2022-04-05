@@ -13,6 +13,7 @@ using ilmhub.core;
 using ilmhub.model;
 using identity.Data;
 using identity.Mappers;
+using identity.CustomValidators;
 
 namespace identity.Controllers;
 
@@ -24,6 +25,7 @@ public class AccountController : Controller
     private readonly IIdentityServerInteractionService _interactionService;
     private readonly MessageQueue<KeyValuePair<Guid, Message>> _queue;
     private readonly ApplicationDbContext _context;
+    private readonly UserValidationErrorDescriber _describer;
 
     public AccountController(
         ILogger<AccountController> logger,
@@ -31,7 +33,8 @@ public class AccountController : Controller
         UserManager<User> userManager,
         IIdentityServerInteractionService interactionService,
         MessageQueue<KeyValuePair<Guid, Message>> queue,
-        ApplicationDbContext context)
+        ApplicationDbContext context,
+        UserValidationErrorDescriber describer)
     {
         _logger = logger;
         _signInManager = signInManager;
@@ -39,6 +42,7 @@ public class AccountController : Controller
         _interactionService = interactionService;
         _queue = queue;
         _context = context;
+        _describer = describer;
     }
 
     public async Task<IActionResult> Login(string returnUrl)
@@ -56,13 +60,13 @@ public class AccountController : Controller
     {
         if(!ModelState.IsValid)
         {
+            model.ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync();
             return View(model);
         }
         var user = await _userManager.FindByEmailAsync(model.Email);
         if(user == null)
         {
-            ModelState.AddModelError("", "Invalid login attempt.");
-            model.ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync();
+            ModelState.AddModelError("Email", _describer.NotAuthenticated().Description);
             return View(model);
         }
         var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
@@ -75,7 +79,7 @@ public class AccountController : Controller
             }
 
             model.ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync();
-            ModelState.AddModelError("Email", "Email or password is wrong.");
+            ModelState.AddModelError("Password", _describer.PasswordMismatch().Description);
             return View(model);
         }
 
@@ -101,6 +105,7 @@ public class AccountController : Controller
 
         if(await _userManager.Users.AnyAsync(u => u.Email == model.Email))
         {
+            ModelState.AddModelError("Email", _describer.DuplicateEmail(model.Email).Description);
             return View(model);
         }
 
@@ -136,43 +141,34 @@ public class AccountController : Controller
             model.ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync();
             foreach (var createUserError in result.Errors)
             {
-                Console.BackgroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine($"{createUserError}");
-                Console.BackgroundColor = ConsoleColor.Black;
                 switch (createUserError.Code)
                 {
-                    case "DuplicateUserName":
-                        ModelState.AddModelError(nameof(model.Email), "Duplicate Username");
-                        break;
-                    case "InvalidUserName":
-                        ModelState.AddModelError(nameof(model.Email), "Invalid Username");
-                        break;
-                    case "RestrictedUsername":
-                        ModelState.AddModelError(nameof(model.Email), "Restricted Username");
-                        break;
                     case "DuplicateEmail":
-                        ModelState.AddModelError(nameof(model.Email), "This email is already taken");
+                        ModelState.AddModelError(nameof(model.Email), createUserError.Description);
+                        break;
+                    case "DuplicateUserName":
+                        ModelState.AddModelError(nameof(model.Email), _describer.DuplicateEmail(model.Email).Description);
                         break;
                     case "InvalidEmail":
-                        ModelState.AddModelError(nameof(model.Email), "Invalid Email");
+                        ModelState.AddModelError(nameof(model.Email), createUserError.Description);
                         break;
                     case "PasswordTooShort":
-                        ModelState.AddModelError(nameof(model.Password), "Password too short");
+                        ModelState.AddModelError(nameof(model.Password), createUserError.Description);
                         break;
                     case "PasswordRequiresNonAlphanumeric":
-                        ModelState.AddModelError(nameof(model.Password), "Password requires non-alphanumeric characters");
+                        ModelState.AddModelError(nameof(model.Password), createUserError.Description);
                         break;
                     case "PasswordRequiresDigit":
-                        ModelState.AddModelError(nameof(model.Password), "Password requires digit");
+                        ModelState.AddModelError(nameof(model.Password), createUserError.Description);
                         break;
                     case "PasswordRequiresLower":
-                        ModelState.AddModelError(nameof(model.Password), "Password requires lower case characters");
+                        ModelState.AddModelError(nameof(model.Password), createUserError.Description);
                         break;
                     case "PasswordRequiresUpper":
-                        ModelState.AddModelError(nameof(model.Password), "Password requires upper case characters");
+                        ModelState.AddModelError(nameof(model.Password), createUserError.Description);
                         break;
                     default:
-                        ModelState.AddModelError(string.Empty, "Something went wrong");
+                        ModelState.AddModelError(string.Empty, _describer.DefaultError().Description);
                         break;
                 }
             }
@@ -255,7 +251,7 @@ public class AccountController : Controller
         var result = await HttpContext.AuthenticateAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
         if (result?.Succeeded != true)
         {
-            ViewData["ErrorMessage"] = "External login failed";
+            ViewData["ErrorMessage"] = _describer.ExternalLoginFailed().Description;
             // TODO: log detailed error
             _logger.LogError(result.Failure.Message);
             return Redirect("/error");
@@ -264,7 +260,7 @@ public class AccountController : Controller
         var externalUser = result.Principal;
         if (externalUser == null)
         {
-            ViewData["ErrorMessage"] = "External login failed";
+            ViewData["ErrorMessage"] = _describer.ExternalLoginFailed().Description;
             // TODO: log detailed error
             return Redirect("/error");
         }
@@ -273,7 +269,7 @@ public class AccountController : Controller
         var email = claims.Find(x => x.Type == JwtClaimTypes.Email) ?? claims.Find(x => x.Type == ClaimTypes.Email);
         if (string.IsNullOrWhiteSpace(email?.Value))
         {
-            ViewData["ErrorMessage"] = "External login failed";
+            ViewData["ErrorMessage"] = _describer.ExternalLoginFailed().Description;
             // TODO: log detailed error
             return Redirect("/error");
         }
@@ -282,7 +278,7 @@ public class AccountController : Controller
         {
             return View(nameof(Register), new RegisterViewModel()
             {
-                ErrorMessage = "User with this email already exists.",
+                ErrorMessage = _describer.DuplicateEmail(email.Value).Description,
                 ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync(),
                 ReturnUrl = returnUrl
             });
@@ -307,14 +303,14 @@ public class AccountController : Controller
         var result = await HttpContext.AuthenticateAsync(IdentityServerConstants.ExternalCookieAuthenticationScheme);
         if (result?.Succeeded != true)
         {
-            throw new Exception("External authentication error");
+            throw new Exception(_describer.ExternalLoginFailed().Description);
         }
 
         // retrieve claims of the external user
         var externalUser = result.Principal;
         if (externalUser == null)
         {
-            throw new Exception("External authentication error");
+            throw new Exception(_describer.ExternalLoginFailed().Description);
         }
 
         var claims = externalUser.Claims.ToList();
@@ -410,6 +406,7 @@ public class AccountController : Controller
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
         var confirmUrl = Url.Action("ResetPassword", "Account", new { token, user.Id}, protocol: "https");
+        // TODO : Send email with localized reset password link. Now only in English
 
         var htmlContent = $"Welcome to Ilmhub, please click <a href='{confirmUrl}'>here</a> to reset your password.";
 
@@ -436,7 +433,6 @@ public class AccountController : Controller
         var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == model.UserId);
         if(user == null)
         {
-            // TODO: return error message Email Confirmation Link is broken
             // TODO: return error message Email Confirmation Link is broken
             return Redirect("/error?user=isnull");
         }

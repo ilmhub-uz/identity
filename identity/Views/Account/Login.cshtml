@@ -21,7 +21,7 @@
                     <p class="col text-muted my-3">OR</p>
                 }
 
-                <input asp-for="Email" type="email" id="inputEmail" class="form-control" placeholder="Email address">
+                <input asp-for="Email" type="text" id="inputEmail" class="form-control" placeholder="Email address">
                 <span class="text-danger" asp-validation-for="Email"></span>
                 <input asp-for="Password" type="password" id="inputPassword" class="form-control" placeholder="Password">
                 <span class="text-danger" asp-validation-for="Password"></span>
@@ -38,5 +38,3 @@
         </div>
     </div>
 </div>
-
-@Html.RenderPartialAsync("_ValidationScriptsPartial");

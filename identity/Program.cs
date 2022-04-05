@@ -78,6 +78,7 @@ builder.Services.AddAuthentication()
 builder.Services.AddSingleton<MessageQueue<KeyValuePair<Guid, ilmhub.model.Message>>>();
 builder.Services.AddSendGrid(options => options.ApiKey = builder.Configuration["SendGrid:ApiKey"]);
 builder.Services.AddHostedService<MessageQueueService>();
+builder.Services.AddScoped<UserValidationErrorDescriber>();
 
 builder.Services.AddControllersWithViews();
 
