@@ -1,19 +1,23 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using identity.Attributes;
+
 namespace identity.ViewModels;
 public class ResetPasswordViewModel
 {
-    [Required]
+    [CustomRequired]
     public string UserId { get; set; }
     
-    [Required]
+    [CustomRequired]
     public string Token { get; set; }
     
-    [Required]
+    [CustomRequired]
     [DataType(DataType.Password)]
     public string Password { get; set; }
     
-    [Required]
+    [CustomRequired]
     [DataType(DataType.Password)]
-    [Compare(nameof(Password))]
+    [CustomDisplayName("Confirm Password")]
+    [CustomCompare(nameof(Password))]
     public string ConfirmPassword { get; set; }
 }
