@@ -1,0 +1,13 @@
+
+@{
+    var username = User?.Identity?.Name ?? "Nomalum shaxs";
+}
+
+<div class="container">
+    <div class="row align-items-center vh-100">
+        <div class="col-md-6 mx-auto text-center">
+            <text class="display-6"><strong class="text-uppercase">@username</strong>, <code>Ilmhub</code>ga hush kelibsiz 🥳!</text>
+            <a asp-action="Logout" asp-controller="Account" class="btn btn-primary">Logout</a>
+        </div>
+    </div>
+</div>
