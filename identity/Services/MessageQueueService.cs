@@ -1,9 +1,8 @@
 using identity.Data;
 using SendGrid;
-using ilmhub.model;
 using Microsoft.EntityFrameworkCore;
 using SendGrid.Helpers.Mail;
-using ilmhub.core;
+using identity.EmailModels.Enums;
 
 namespace identity.Services;
 public class MessageQueueService : BackgroundService
@@ -12,10 +11,10 @@ public class MessageQueueService : BackgroundService
     private const int EMPTY_QUEUE_DELAY_IN_SECONDS = 60 * 3;
     private readonly ILogger<MessageQueueService> _logger;
     private readonly ISendGridClient _client;
-    private readonly MessageQueue<KeyValuePair<Guid, Message>> _queue;
+    private readonly MessageQueue<KeyValuePair<Guid, identity.EmailModels.Models.Message>> _queue;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public MessageQueueService(ILogger<MessageQueueService> logger, ISendGridClient client, MessageQueue<KeyValuePair<Guid, Message>> queue, IServiceScopeFactory scopeFactory)
+    public MessageQueueService(ILogger<MessageQueueService> logger, ISendGridClient client, MessageQueue<KeyValuePair<Guid, identity.EmailModels.Models.Message>> queue, IServiceScopeFactory scopeFactory)
     {
         _logger = logger;
         _client = client;

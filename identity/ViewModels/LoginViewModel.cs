@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using identity.Services;
+using identity.Attributes;
 using Microsoft.AspNetCore.Authentication;
 
 namespace identity.ViewModels;

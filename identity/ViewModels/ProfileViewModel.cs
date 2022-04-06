@@ -1,4 +1,4 @@
-using identity.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace identity.ViewModels;
 
@@ -6,9 +6,9 @@ public class ProfileViewModel
 {
     public string Fullname { get; set; }
     
-    [CustomEmail]
+    [EmailAddress]
     public string Email { get; set; }
 
-    [CustomPhone]
+    [Phone]
     public string Phone { get; set; }
 }

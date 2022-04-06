@@ -9,11 +9,10 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ilmhub.core;
-using ilmhub.model;
 using identity.Data;
 using identity.Mappers;
 using identity.CustomValidators;
+using identity.EmailModels.Enums;
 
 namespace identity.Controllers;
 
@@ -23,7 +22,7 @@ public class AccountController : Controller
     private readonly SignInManager<User> _signInManager;
     private readonly UserManager<User> _userManager;
     private readonly IIdentityServerInteractionService _interactionService;
-    private readonly MessageQueue<KeyValuePair<Guid, Message>> _queue;
+    private readonly MessageQueue<KeyValuePair<Guid, identity.EmailModels.Models.Message>> _queue;
     private readonly ApplicationDbContext _context;
     private readonly UserValidationErrorDescriber _describer;
 
@@ -32,7 +31,7 @@ public class AccountController : Controller
         SignInManager<User> signInManager,
         UserManager<User> userManager,
         IIdentityServerInteractionService interactionService,
-        MessageQueue<KeyValuePair<Guid, Message>> queue,
+        MessageQueue<KeyValuePair<Guid, identity.EmailModels.Models.Message>> queue,
         ApplicationDbContext context,
         UserValidationErrorDescriber describer)
     {
@@ -127,7 +126,7 @@ public class AccountController : Controller
 
             var htmlContent = $"Welcome to Ilmhub, please <a href='{confirmUrl}'>confirm your email</a>";
 
-            var emailMessage = new ilmhub.entity.Message("EmailConfirmation", EMessageType.Email, "no-reply@ilmhub.uz", "Ilmhub", user.Email, user.Fullname, "Confirm your account at Ilmhub", "", htmlContent);
+            var emailMessage = new identity.EmailModels.Entity.Message("EmailConfirmation", EMessageType.Email, "no-reply@ilmhub.uz", "Ilmhub", user.Email, user.Fullname, "Confirm your account at Ilmhub", "", htmlContent);
 
             _context.Messages.Add(emailMessage);
             await _context.SaveChangesAsync();
@@ -410,7 +409,7 @@ public class AccountController : Controller
 
         var htmlContent = $"Welcome to Ilmhub, please click <a href='{confirmUrl}'>here</a> to reset your password.";
 
-        var emailMessage = new ilmhub.entity.Message("ResetPassword", EMessageType.Email, "no-reply@ilmhub.uz", "Ilmhub", user.Email, user.Fullname, "Reset Password", "", htmlContent);
+        var emailMessage = new identity.EmailModels.Entity.Message("ResetPassword", EMessageType.Email, "no-reply@ilmhub.uz", "Ilmhub", user.Email, user.Fullname, "Reset Password", "", htmlContent);
 
         _context.Messages.Add(emailMessage);
         await _context.SaveChangesAsync();
