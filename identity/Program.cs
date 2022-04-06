@@ -26,6 +26,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     options.SignIn.RequireConfirmedEmail = true;
 })
 .AddErrorDescriber<UserValidationErrorDescriber>()
+.AddUserValidator<UserValidator>()
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 

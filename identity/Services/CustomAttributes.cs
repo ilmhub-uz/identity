@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace identity.Attributes;
+namespace identity.Services;
 
 public class CustomRequiredAttribute : RequiredAttribute
 {

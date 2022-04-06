@@ -27,4 +27,7 @@ public class UserValidationErrorDescriber : IdentityErrorDescriber
     public override IdentityError PasswordRequiresUniqueChars(int count) { return new IdentityError { Code = nameof(PasswordRequiresUniqueChars), Description = $"Passwords must contain at least {count} unique characters" }; }
     public IdentityError NotAuthenticated() { return new IdentityError { Code = nameof(NotAuthenticated), Description = "Registered email is not found" }; }
     public IdentityError ExternalLoginFailed() { return new IdentityError { Code = nameof(ExternalLoginFailed), Description = "External login failed" }; }
+    public IdentityError EmailRequired() { return new IdentityError { Code = nameof(EmailRequired), Description = "Email is required" }; }
+    public IdentityError InvalidPhoneNumber(string phoneNumber) { return new IdentityError { Code = nameof(InvalidPhoneNumber), Description = "Invalid phone number" }; }
+    public IdentityError DuplicatePhoneNumber(string phoneNumber) { return new IdentityError { Code = nameof(DuplicatePhoneNumber), Description = "Phone number is already taken" }; }
 }
