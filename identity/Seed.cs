@@ -1,5 +1,4 @@
-using System.Security.Cryptography;
-using System.Text.Json;
+using identity.Data;
 using identity.Entity;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
@@ -9,6 +8,21 @@ using Microsoft.EntityFrameworkCore;
 
 public static class Seed
 {
+    public static void MigrateDatabases(IApplicationBuilder app)
+    {
+        using var scope = app.ApplicationServices
+            .GetRequiredService<IServiceScopeFactory>()
+            .CreateScope();
+        
+        var configContext = scope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
+        var persistedContext = scope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>();
+        var appContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        configContext.Database.Migrate();
+        persistedContext.Database.Migrate();
+        appContext.Database.Migrate();
+    }
+
     public static async Task InitializeTestUsers(IApplicationBuilder app)
     {
         using var scope = app.ApplicationServices
@@ -56,9 +70,6 @@ public static class Seed
                     return c.ToEntity();
                 });
                 await configContext.Clients.AddRangeAsync(clientEntities);
-                Console.WriteLine($"");
-                Console.WriteLine($"{JsonSerializer.Serialize(configContext.Clients)}");
-                Console.WriteLine($"");
             }
         }
 
