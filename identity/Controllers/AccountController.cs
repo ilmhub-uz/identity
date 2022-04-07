@@ -411,7 +411,7 @@ public class AccountController : Controller
 
         var htmlContent = System.IO.File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/PasswordResetEmail.html"));
         htmlContent = htmlContent.Replace("{confirmUrl}", confirmUrl);
-        var emailMessage = new ilmhub.entity.Message("ResetPassword", EMessageType.Email, "no-reply@ilmhub.uz", "Ilmhub", user.Email, user.Fullname, "Reset Password", "", htmlContent);
+        var emailMessage = new identity.EmailModels.Entity.Message("ResetPassword", EMessageType.Email, "no-reply@ilmhub.uz", "Ilmhub", user.Email, user.Fullname, "Reset Password", "", htmlContent);
 
         _context.Messages.Add(emailMessage);
         await _context.SaveChangesAsync();
