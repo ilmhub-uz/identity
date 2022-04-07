@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text.Json;
 using identity.Entity;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
@@ -55,6 +56,9 @@ public static class Seed
                     return c.ToEntity();
                 });
                 await configContext.Clients.AddRangeAsync(clientEntities);
+                Console.WriteLine($"");
+                Console.WriteLine($"{JsonSerializer.Serialize(configContext.Clients)}");
+                Console.WriteLine($"");
             }
         }
 
