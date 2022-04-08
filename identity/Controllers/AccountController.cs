@@ -262,6 +262,7 @@ public class AccountController : Controller
         {
             ViewData["ErrorMessage"] = _describer.ExternalLoginFailed().Description;
             // TODO: log detailed error
+            _logger.LogWarning($"{_describer.ExternalLoginFailed().Description}. external user turned out to be null!");
             return Redirect("/error");
         }
 
@@ -271,11 +272,13 @@ public class AccountController : Controller
         {
             ViewData["ErrorMessage"] = _describer.ExternalLoginFailed().Description;
             // TODO: log detailed error
+            _logger.LogWarning($"{_describer.ExternalLoginFailed().Description}. external user's email turned out to be null!");
             return Redirect("/error");
         }
 
         if(await _userManager.Users.AnyAsync(u => u.Email == email.Value))
         {
+            _logger.LogWarning($"{_describer.DuplicateEmail(email.Value).Description}. External register failed because user already exists.");
             return View(nameof(Register), new RegisterViewModel()
             {
                 ErrorMessage = _describer.DuplicateEmail(email.Value).Description,
@@ -327,8 +330,10 @@ public class AccountController : Controller
         var user = await _userManager.FindByEmailAsync(emailClaim.Value);
         if(user == null)
         {
+            _logger.LogWarning(_describer.NotAuthenticated().Description);
             return View(nameof(Register), new RegisterViewModel()
             {
+                ErrorMessage = _describer.NotAuthenticated().Description,
                 ExternalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync(),
                 ReturnUrl = returnUrl,
                 Email = emailClaim.Value,

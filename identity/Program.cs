@@ -26,6 +26,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     options.SignIn.RequireConfirmedEmail = true;
 })
 .AddErrorDescriber<UserValidationErrorDescriber>()
+.AddUserValidator<UserValidator>()
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
@@ -70,8 +71,10 @@ builder.Services.AddAuthentication()
         options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
         options.ForwardSignOut = IdentityServerConstants.DefaultCookieAuthenticationScheme;
 
-        options.ClientId =builder.Configuration["ExternalProviders:Github:ClientId"];;
-        options.ClientSecret =  builder.Configuration["ExternalProviders:Github:ClientSecret"];;
+        options.ClientId = "67105c7ee9cbfd73a396";   
+        options.ClientSecret =  "89fb46067a54d932aa410072acad8d9cc7aa0b9b";
+        // options.ClientId =builder.Configuration["ExternalProviders:Github:ClientId"];
+        // options.ClientSecret =  builder.Configuration["ExternalProviders:Github:ClientSecret"];
 
         options.Scope.Add("user:email");
     });
