@@ -1,0 +1,52 @@
+version: '3'
+
+networks:
+  web:
+    external: true
+  internal:
+    external: false
+
+services:
+
+  traefik:
+    container_name: traefik
+    image: 'traefik:v2.2'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/traefik.toml:/etc/traefik/traefik.toml
+      - /etc/traefik_dynamic.toml:/etc/traefik/traefik_dynamic.toml
+      - /etc/acme.json:/etc/traefik/acme.json
+    ports:
+      - '80:80'
+      - '443:443'
+    networks:
+      - web
+
+  database:
+    container_name: database
+    image: mcr.microsoft.com/azure-sql-edge
+    networks:
+      - internal
+    environment:
+      - ACCEPT_EULA=1
+      - MSSQL_SA_PASSWORD=wahid1234@
+    restart: always
+    labels:
+      - traefik.enable=false
+  
+  auth:
+    container_name: auth
+    image: davidwahid/identity:latest
+    environment:
+      - ASPNETCORE_URLS="http://+:80;https://+:443"
+    networks:
+      - web
+      - internal
+    labels:
+      - traefik.http.routers.auth.rule=Host(`auth.ilmhub.uz`)
+      - traefik.http.routers.auth.tls=true
+      - traefik.http.routers.auth.tls.certresolver=lets-encrypt
+      - traefik.port=80
+    depends_on:
+      - database
+    

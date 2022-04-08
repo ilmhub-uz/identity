@@ -122,7 +122,7 @@ public class AccountController : Controller
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             // TODO: this URlActoin is wrong.
             // https:localhost:1223/account/confirmemail?token={}&id={}
-            var confirmUrl = Url.Action("ConfirmEmail", "Account", new { token, user.Id}, protocol: "https");
+            var confirmUrl = Url.Action("ConfirmEmail", "Account", new { token, user.Id}, protocol: Request.Scheme);
 
             var htmlContent = $"Welcome to Ilmhub, please <a href='{confirmUrl}'>confirm your email</a>";
 
@@ -404,7 +404,7 @@ public class AccountController : Controller
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-        var confirmUrl = Url.Action("ResetPassword", "Account", new { token, user.Id}, protocol: "https");
+        var confirmUrl = Url.Action("ResetPassword", "Account", new { token, user.Id}, protocol: Request.Scheme);
         // TODO : Send email with localized reset password link. Now only in English
 
         var htmlContent = $"Welcome to Ilmhub, please click <a href='{confirmUrl}'>here</a> to reset your password.";
