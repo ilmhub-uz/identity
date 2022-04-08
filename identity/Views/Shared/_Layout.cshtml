@@ -33,7 +33,7 @@
     </environment>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
-    @(await Html.PartialAsync("_ValidationScriptsPartial"))
+    @Html.PartialAsync("_ValidationScriptsPartial")
 </body>
 
 </html>
