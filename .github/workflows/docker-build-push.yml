@@ -6,7 +6,7 @@ on:
       - 'main'
 
 jobs:
-  docker:
+  dockerize:
     runs-on: ubuntu-latest
     steps:
       -
