@@ -124,7 +124,8 @@ public class AccountController : Controller
             // https:localhost:1223/account/confirmemail?token={}&id={}
             var confirmUrl = Url.Action("ConfirmEmail", "Account", new { token, user.Id}, protocol: "https");
 
-            var htmlContent = $"Welcome to Ilmhub, please <a href='{confirmUrl}'>confirm your email</a>";
+            var htmlContent = System.IO.File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/EmailConfirm.html"));
+            htmlContent = htmlContent.Replace("{confirmUrl}", confirmUrl);
 
             var emailMessage = new identity.EmailModels.Entity.Message("EmailConfirmation", EMessageType.Email, "no-reply@ilmhub.uz", "Ilmhub", user.Email, user.Fullname, "Confirm your account at Ilmhub", "", htmlContent);
 
@@ -407,7 +408,8 @@ public class AccountController : Controller
         var confirmUrl = Url.Action("ResetPassword", "Account", new { token, user.Id}, protocol: "https");
         // TODO : Send email with localized reset password link. Now only in English
 
-        var htmlContent = $"Welcome to Ilmhub, please click <a href='{confirmUrl}'>here</a> to reset your password.";
+        var htmlContent = System.IO.File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/PasswordResetEmail.html"));
+        htmlContent = htmlContent.Replace("{confirmUrl}", confirmUrl);
 
         var emailMessage = new identity.EmailModels.Entity.Message("ResetPassword", EMessageType.Email, "no-reply@ilmhub.uz", "Ilmhub", user.Email, user.Fullname, "Reset Password", "", htmlContent);
 
