@@ -89,6 +89,7 @@ app.UseStaticFiles();
 app.UseCors();
 
 app.UseIdentityServer();
+app.UseCookiePolicy(new CookiePolicyOptions { MinimumSameSitePolicy = SameSiteMode.Lax });
 
 app.UseAuthentication();
 app.UseAuthorization();
