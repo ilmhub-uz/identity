@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using identity.Attributes;
 
 namespace identity.ViewModels;
 
@@ -9,6 +10,6 @@ public class ProfileViewModel
     [EmailAddress]
     public string Email { get; set; }
 
-    [Phone]
+    [CustomPhone]
     public string Phone { get; set; }
 }
