@@ -1,9 +1,10 @@
-name: Dockerize
+name: Dockerize and Deploy to DigitOcean
 
 on:
   push:
     branches:
       - 'main'
+  workflow_dispatch:
 
 jobs:
   dockerize:
@@ -27,3 +28,17 @@ jobs:
         with:
           push: true
           tags: davidwahid/identity:latest
+  deploy:
+    runs-on: ubuntu-latest
+    needs: dockerize
+    
+    steps:
+      - name: Deploy to Digital Ocean droplet via SSH
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.DO_HOST }}
+          port: ${{ secrets.DO_PORT }}
+          username: ${{ secrets.DO_USERNAME }}
+          key: ${{ secrets.DO_SSHKEY }}
+          script: |
+            docker pull davidwahid/identity && docker-compose up -d --no-deps auth
