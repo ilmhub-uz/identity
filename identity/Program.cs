@@ -4,6 +4,7 @@ using identity.Data;
 using identity.Entity;
 using identity.Services;
 using IdentityServer4;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SendGrid.Extensions.DependencyInjection;
@@ -87,6 +88,11 @@ builder.Services.AddScoped<UserValidationErrorDescriber>();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+    {
+        ForwardedHeaders = ForwardedHeaders.XForwardedProto
+    });
 
 app.UseStaticFiles();
 app.UseCors();
