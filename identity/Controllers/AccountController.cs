@@ -108,6 +108,12 @@ public class AccountController : Controller
             return View(model);
         }
 
+        if(await _userManager.Users.AnyAsync(u => u.PhoneNumber == model.Phone))
+        {
+            ModelState.AddModelError(nameof(model.Phone), _describer.DuplicatePhoneNumber(model.Phone).Description);
+            return View(model);
+        }
+
         var user = new User()
         {
             Email = model.Email,
