@@ -23,7 +23,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     options.Password.RequiredLength = 6;
 
     options.User.RequireUniqueEmail = true;
-    options.SignIn.RequireConfirmedEmail = true;
+    options.SignIn.RequireConfirmedEmail = false;
 })
 .AddErrorDescriber<UserValidationErrorDescriber>()
 .AddUserValidator<UserValidator>()
@@ -101,7 +101,7 @@ app.MapDefaultControllerRoute();
 
 Seed.MigrateDatabases(app);
 
-// Seed.InitializeConfiguration(app).GetAwaiter().GetResult();
-// Seed.InitializeTestUsers(app).GetAwaiter().GetResult();
+Seed.InitializeConfiguration(app).GetAwaiter().GetResult();
+Seed.InitializeTestUsers(app).GetAwaiter().GetResult();
 
 app.Run();

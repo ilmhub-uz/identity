@@ -12,4 +12,6 @@ public class ClientRegistrationViewModel
     public IEnumerable<string> RedirectUris { get; set; } = new List<string>();
     public string Scope { get; set; } = "openid profile email";
     public string ErrorMessage { get; set; }
+    public string Grants { get; set; }
+    public string Redirects { get; set; }
 }
