@@ -66,7 +66,7 @@ public static class Seed
             {
                 var clientEntities = clients.Select(c =>
                 {
-                    c.ClientSecrets = new [] { new Secret("test-spa".Sha256()) };
+                    c.ClientSecrets = new [] { new Secret("maker".Sha256()) };
                     return c.ToEntity();
                 });
                 await configContext.Clients.AddRangeAsync(clientEntities);
