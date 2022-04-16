@@ -4,6 +4,7 @@ using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
 using IdentityServer4.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 public static class Seed
@@ -69,6 +70,7 @@ public static class Seed
                     c.ClientSecrets = new [] { new Secret("maker".Sha256()) };
                     return c.ToEntity();
                 });
+                
                 await configContext.Clients.AddRangeAsync(clientEntities);
             }
         }
@@ -108,6 +110,24 @@ public static class Seed
             }
         }
 
-        await configContext.SaveChangesAsync();
+        try
+        {
+            await configContext.SaveChangesAsync();
+        }
+        catch(DbUpdateException ex)
+        {
+            Console.WriteLine(ex.Message);
+            if(ex.InnerException is SqlException sqlException)
+            {
+                if(sqlException.Number == 2627)
+                {
+                    Console.WriteLine("Duplicate key found");
+                }
+            }
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
     }
 }
